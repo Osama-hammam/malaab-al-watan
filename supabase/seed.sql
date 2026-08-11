@@ -19,9 +19,9 @@ select b.id, s.code, s.field_type, s.price_egp, s.conflicts_with
 from public.branches b
 cross join (
   values
-    ('A',  '5v5', 300, array['A', 'AB']),
-    ('B',  '5v5', 300, array['B', 'AB']),
-    ('AB', '7v7', 600, array['A', 'B', 'AB'])
+    ('A',  '6v6', 300, array['A', 'AB']),
+    ('B',  '6v6', 300, array['B', 'AB']),
+    ('AB', '8v8', 600, array['A', 'B', 'AB'])
 ) as s(code, field_type, price_egp, conflicts_with)
 on conflict (branch_id, code) do update
   set price_egp = excluded.price_egp,
@@ -41,9 +41,9 @@ insert into public.settings (key, value, description, is_public) values
     'How long a booking_locks hold is valid for before auto-expiring.', true),
   ('slot_granularity_minutes', '60',
     'Step size used by get_available_slots() to generate candidate slot start times.', true),
-  ('vodafone_cash_number', '"01000000000"',
+  ('vodafone_cash_number', '"01018349359"',
     'Vodafone Cash number customers should send payment to. REPLACE with the real number before launch.', true),
-  ('whatsapp_number', '"01000000000"',
+  ('whatsapp_number', '"01018349359"',
     'WhatsApp number for booking notifications / customer contact. REPLACE with the real number before launch.', true),
   ('branch_visibility_mode', '"active_only"',
     'Reserved for future frontend use; branches.is_active is the current source of truth.', true)
