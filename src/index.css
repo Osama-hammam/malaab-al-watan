@@ -121,6 +121,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
   html {
     direction: rtl;
     scroll-behavior: smooth;
@@ -130,6 +136,11 @@
     font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Optimize buttons for mobile */
+  button, a {
+    touch-action: manipulation;
   }
 }
 

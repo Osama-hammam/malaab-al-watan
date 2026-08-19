@@ -36,7 +36,7 @@ export function SuccessScreen({
       customerPhone,
     });
     // الرقم الذي تم تحديده للإدارة
-    openWhatsAppWithMessage("01066328651", msg);
+    openWhatsAppWithMessage("201066328651", msg);
   };
   return (
     <motion.div
