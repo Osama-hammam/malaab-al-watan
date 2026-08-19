@@ -57,13 +57,6 @@ const fadeUp: Variants = {
 };
 
 export default function Home() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
-  
-  // Create a massive rolling ball effect tied to scroll
-  const ballRotate = useTransform(scrollYProgress, [0, 1], [0, 720]);
-  const ballY = useTransform(scrollYProgress, [0, 1], ["-10vh", "70vh"]);
-
   // Force dark mode on this page to match the neon theme
   useEffect(() => {
     document.documentElement.classList.add("dark");
@@ -71,7 +64,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div ref={containerRef} dir="rtl" lang="ar" className="relative min-h-screen overflow-hidden bg-background">
+    <div dir="rtl" lang="ar" className="relative min-h-screen overflow-hidden bg-background">
       
       {/* Immersive Background Effects */}
       <div className="moving-grid" />
@@ -80,8 +73,9 @@ export default function Home() {
       
       {/* Huge Rolling Ball in the background */}
       <motion.div 
-        style={{ rotate: ballRotate, y: ballY, x: "-50%" }}
-        className="absolute left-[50%] z-0 opacity-[0.03] pointer-events-none select-none text-[150vw] md:text-[80vw] leading-none"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+        className="absolute top-20 left-1/2 -translate-x-1/2 z-0 opacity-[0.03] pointer-events-none select-none text-[150vw] md:text-[80vw] leading-none"
       >
         ⚽
       </motion.div>
