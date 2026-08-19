@@ -17,10 +17,11 @@ export function ErrorBanner({ error }: { error: BookingFlowError }) {
   return (
     <div
       role="alert"
-      className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+      dir="rtl"
+      className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3.5 text-sm font-bold text-destructive shadow-sm"
     >
       <Icon className="mt-0.5 size-4 shrink-0" />
-      <span>{error.message}</span>
+      <span className="leading-relaxed">{error.message}</span>
     </div>
   );
 }

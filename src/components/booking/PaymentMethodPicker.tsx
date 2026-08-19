@@ -19,18 +19,18 @@ export function PaymentMethodPicker({
 
   if (isLoading) {
     return (
-      <div className="flex gap-2">
-        <Skeleton className="h-11 w-32 rounded-lg" />
+      <div className="flex gap-2.5">
+        <Skeleton className="h-12 w-36 rounded-xl" />
       </div>
     );
   }
 
   if (!data || data.length === 0) {
-    return <p className="text-sm text-muted-foreground">No payment methods are available right now.</p>;
+    return <p className="text-sm text-muted-foreground">لا توجد طرق دفع متاحة حالياً.</p>;
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-3">
       {data.map((method) => {
         const isSelected = method.code === value;
         return (
@@ -39,13 +39,13 @@ export function PaymentMethodPicker({
             type="button"
             onClick={() => onChange(method.code)}
             className={cn(
-              "flex items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-colors",
+              "flex items-center gap-2.5 rounded-xl border-2 px-4 py-3 text-sm font-bold transition-all",
               isSelected
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-input hover:border-primary/50 hover:bg-accent"
+                ? "border-primary bg-primary/10 text-primary scale-105 shadow-sm"
+                : "border-input bg-background hover:border-primary/40 hover:bg-muted active:scale-95"
             )}
           >
-            <Smartphone className="size-4" />
+            <Smartphone className="size-5" />
             <span dir="rtl" lang="ar">
               {method.labelAr}
             </span>

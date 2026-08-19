@@ -19,9 +19,9 @@ select b.id, s.code, s.field_type, s.price_egp, s.conflicts_with
 from public.branches b
 cross join (
   values
-    ('A',  '6v6', 300, array['A', 'AB']),
-    ('B',  '6v6', 300, array['B', 'AB']),
-    ('AB', '8v8', 600, array['A', 'B', 'AB'])
+    ('A',  '5v5', 300, array['A', 'AB']),
+    ('B',  '5v5', 300, array['B', 'AB']),
+    ('AB', '7v7', 600, array['A', 'B', 'AB'])
 ) as s(code, field_type, price_egp, conflicts_with)
 on conflict (branch_id, code) do update
   set price_egp = excluded.price_egp,

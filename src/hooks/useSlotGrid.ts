@@ -3,7 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getAvailableSlots } from "@/services/rpc";
 import { getUnavailableSlotsForBranch } from "@/services/availabilityService";
-import { getWorkingHours, getSlotGranularityMinutes } from "@/services/settingsService";
+import {
+  getWorkingHours,
+  getSlotGranularityMinutes,
+} from "@/services/settingsService";
 
 export type SlotStatus = "available" | "locked" | "booked";
 
@@ -18,7 +21,11 @@ function addHours(iso: string, hours: number): Date {
   return new Date(new Date(iso).getTime() + hours * 60 * 60 * 1000);
 }
 
-export function useSlotGrid(params: { branchId: string | null; fieldSectionId: string | null; date: string | null }) {
+export function useSlotGrid(params: {
+  branchId: string | null;
+  fieldSectionId: string | null;
+  date: string | null;
+}) {
   const { branchId, fieldSectionId, date } = params;
 
   const workingHoursQuery = useQuery({
@@ -35,7 +42,11 @@ export function useSlotGrid(params: { branchId: string | null; fieldSectionId: s
 
   const availableQuery = useQuery({
     queryKey: ["available-slots", fieldSectionId, date],
-    queryFn: () => getAvailableSlots({ fieldSectionId: fieldSectionId as string, date: date as string }),
+    queryFn: () =>
+      getAvailableSlots({
+        fieldSectionId: fieldSectionId as string,
+        date: date as string,
+      }),
     enabled: Boolean(fieldSectionId && date),
     // Anon has no RLS visibility into bookings/booking_locks (by design —
     // see docs/DATABASE.md), so a true Postgres Realtime subscription to
@@ -50,7 +61,8 @@ export function useSlotGrid(params: { branchId: string | null; fieldSectionId: s
   const unavailableQuery = useQuery({
     queryKey: ["unavailable-slots", branchId, date],
     queryFn: () => {
-      if (!branchId || !date || !workingHoursQuery.data) return Promise.resolve([]);
+      if (!branchId || !date || !workingHoursQuery.data)
+        return Promise.resolve([]);
       const dayStart = new Date(`${date}T00:00:00Z`);
       const dayEnd = new Date(dayStart.getTime() + 2 * 24 * 60 * 60 * 1000); // generous 2-day window covers the overnight session
       return getUnavailableSlotsForBranch({
@@ -64,7 +76,13 @@ export function useSlotGrid(params: { branchId: string | null; fieldSectionId: s
   });
 
   const slots = useMemo<SlotCell[]>(() => {
-    if (!date || !workingHoursQuery.data || !granularityQuery.data || !availableQuery.data) return [];
+    if (
+      !date ||
+      !workingHoursQuery.data ||
+      !granularityQuery.data ||
+      !availableQuery.data
+    )
+      return [];
 
     const { openHour, closeHour, timezoneOffsetHours } = workingHoursQuery.data;
     const granularityMs = granularityQuery.data * 60 * 1000;
@@ -73,24 +91,38 @@ export function useSlotGrid(params: { branchId: string | null; fieldSectionId: s
     // fixed-offset arithmetic, never a named timezone.
     const localMidnight = new Date(`${date}T00:00:00Z`);
     const windowStart = new Date(
-      addHours(localMidnight.toISOString(), openHour).getTime() - timezoneOffsetHours * 60 * 60 * 1000
+      addHours(localMidnight.toISOString(), openHour).getTime() -
+        timezoneOffsetHours * 60 * 60 * 1000,
     );
     const nextDay = new Date(localMidnight.getTime() + 24 * 60 * 60 * 1000);
     const windowEnd = new Date(
-      addHours(nextDay.toISOString(), closeHour).getTime() - timezoneOffsetHours * 60 * 60 * 1000
+      addHours(nextDay.toISOString(), closeHour).getTime() -
+        timezoneOffsetHours * 60 * 60 * 1000,
     );
 
-    const availableStarts = new Set(availableQuery.data.map((s) => s.slotStart));
+    console.log("AVAILABLE FROM RPC:", availableQuery.data);
+    console.log("GENERATED WINDOW:", {
+      windowStart: windowStart.toISOString(),
+      windowEnd: windowEnd.toISOString(),
+    });
+
+    const availableStarts = new Set(
+      availableQuery.data.map((s) => new Date(s.slotStart).getTime()),
+    );
     const unavailable = unavailableQuery.data ?? [];
 
     const cells: SlotCell[] = [];
-    for (let start = windowStart.getTime(); start < windowEnd.getTime(); start += granularityMs) {
+    for (
+      let start = windowStart.getTime();
+      start < windowEnd.getTime();
+      start += granularityMs
+    ) {
       const startDate = new Date(start);
       const endDate = new Date(start + granularityMs);
       const startIso = startDate.toISOString();
 
       let status: SlotStatus;
-      if (availableStarts.has(startIso)) {
+      if (availableStarts.has(startDate.getTime())) {
         status = "available";
       } else {
         // Not available. Distinguish "locked" vs "booked" as a best-effort
@@ -104,7 +136,7 @@ export function useSlotGrid(params: { branchId: string | null; fieldSectionId: s
             u.fieldSectionId === fieldSectionId &&
             u.source === "lock" &&
             new Date(u.startsAt) < endDate &&
-            new Date(u.endsAt) > startDate
+            new Date(u.endsAt) > startDate,
         );
         status = matchingLock ? "locked" : "booked";
       }
@@ -113,12 +145,25 @@ export function useSlotGrid(params: { branchId: string | null; fieldSectionId: s
     }
 
     return cells;
-  }, [date, workingHoursQuery.data, granularityQuery.data, availableQuery.data, unavailableQuery.data, fieldSectionId]);
+  }, [
+    date,
+    workingHoursQuery.data,
+    granularityQuery.data,
+    availableQuery.data,
+    unavailableQuery.data,
+    fieldSectionId,
+  ]);
 
   return {
     slots,
-    isLoading: workingHoursQuery.isLoading || granularityQuery.isLoading || availableQuery.isLoading,
-    isError: workingHoursQuery.isError || granularityQuery.isError || availableQuery.isError,
+    isLoading:
+      workingHoursQuery.isLoading ||
+      granularityQuery.isLoading ||
+      availableQuery.isLoading,
+    isError:
+      workingHoursQuery.isError ||
+      granularityQuery.isError ||
+      availableQuery.isError,
     refetch: () => {
       void availableQuery.refetch();
       void unavailableQuery.refetch();

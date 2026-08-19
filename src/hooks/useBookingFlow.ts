@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { getOrCreateSessionId } from "@/lib/session";
 import {
@@ -9,7 +10,7 @@ import {
   BookingServiceError,
 } from "@/services/rpc";
 import { uploadReceiptFile } from "@/services/receiptStorageService";
-import type { Branch, FieldSection } from "@/services/branchesService";
+import { getActiveBranches, type Branch, type FieldSection } from "@/services/branchesService";
 import type { AvailableSlot } from "@/services/rpc";
 import type { PaymentMethodCode } from "@/types/database.types";
 
@@ -32,6 +33,7 @@ interface ActiveBooking {
   branch: Branch;
   section: FieldSection;
   slot: AvailableSlot;
+  customerName: string;
   customerPhone: string;
   /**
    * Tracks whether the receipt upload actually completed. Without this,
@@ -90,6 +92,7 @@ function toFlowError(error: unknown): BookingFlowError {
  * functions this hook returns.
  */
 export function useBookingFlow() {
+  const [searchParams] = useSearchParams();
   const [sessionId] = useState(() => getOrCreateSessionId());
   const [step, setStep] = useState<BookingStep>("branch");
   const [branch, setBranch] = useState<Branch | null>(null);
@@ -101,8 +104,7 @@ export function useBookingFlow() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Resume state on mount: an already-confirmed booking wins (it never
-  // expires), otherwise resume a still-live lock, otherwise start fresh.
+  // Resume state on mount or auto-select branch from URL
   useEffect(() => {
     const savedBooking = readStorage<ActiveBooking>(BOOKING_STORAGE_KEY);
     if (savedBooking) {
@@ -119,10 +121,24 @@ export function useBookingFlow() {
       setBranch(savedLock.branch);
       setSection(savedLock.section);
       setStep("details");
+      return;
     } else if (savedLock) {
       clearStorage(LOCK_STORAGE_KEY);
     }
-  }, []);
+
+    // Check URL query param for branch pre-selection
+    const branchParam = searchParams.get("branch");
+    if (branchParam) {
+      getActiveBranches().then((branches) => {
+        const found = branches.find((b) => b.id === branchParam || b.slug === branchParam);
+        if (found) {
+          setBranch(found);
+          setSection(null);
+          setStep("field");
+        }
+      });
+    }
+  }, [searchParams]);
 
   const selectBranch = useCallback((selected: Branch) => {
     setError(null);
@@ -221,6 +237,7 @@ export function useBookingFlow() {
           branch,
           section,
           slot: activeLock.slot,
+          customerName: details.customerName,
           customerPhone: details.customerPhone,
           receiptUploaded: false,
         };

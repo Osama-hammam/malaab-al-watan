@@ -1,15 +1,12 @@
 /**
  * Static domain data: brand, branches, and their sub-fields.
  *
- * This is intentionally hard-coded for now (not fetched from the DB)
- * since no tables exist yet. Once a `locations` / `sub_fields` schema
- * is designed, this module can be swapped for a data-fetching hook
- * (e.g. `useBranches()`) with the same exported shape, so nothing that
- * consumes `LOCATIONS`, `FIELD_TYPE_LABEL`, or `FIELD_PRICE_EGP`
- * elsewhere in the app has to change.
+ * Translations: A = ملعب 5×5 الأول، B = ملعب 5×5 الثاني، AB = ملعب 9×9
+ * The 9×9 (AB) is composed of the two 5×5 fields (A + B) combined.
+ * This relationship is enforced at the DB level via `conflicts_with` in field_sections.
  */
 
-/** Official brand name, used as the prefix for every branch's display name. */
+/** Official brand name */
 export const BRAND_NAME = "ملعب الوطن";
 
 export type FieldType = "A" | "B" | "AB";
@@ -18,29 +15,35 @@ export interface SubField {
   id: string;
   type: FieldType;
   label: string;
+  labelAr: string;
+  descriptionAr?: string;
 }
 
 export interface Location {
   id: string;
-  /** Branch name only, e.g. "فرع مبارك السبعين" (without the brand prefix). */
   branchName: string;
-  /** Full display name: `${BRAND_NAME} - ${branchName}`. */
   name: string;
   subFields: SubField[];
 }
 
-const SUB_FIELD_LABEL: Record<FieldType, string> = {
-  A: "A (5v5)",
-  B: "B (5v5)",
-  AB: "AB (7v7)",
+const SUB_FIELD_DATA: Record<FieldType, { label: string; labelAr: string; descriptionAr: string }> = {
+  A: {
+    label: "Field A (5v5)",
+    labelAr: "ملعب 5×5 — الأول",
+    descriptionAr: "ملعب خماسي مضاء بالكامل",
+  },
+  B: {
+    label: "Field B (5v5)",
+    labelAr: "ملعب 5×5 — الثاني",
+    descriptionAr: "ملعب خماسي مضاء بالكامل",
+  },
+  AB: {
+    label: "Full Field (9v9)",
+    labelAr: "ملعب 9×9",
+    descriptionAr: "الملعب الأول + الثاني معاً — ملعب تسعي كامل",
+  },
 };
 
-/**
- * Every branch has the same three sub-fields (A, B, AB), so a new branch
- * is defined in one line — see `LOCATIONS` below — rather than repeating
- * this boilerplate. To add a branch in the future, just add another
- * `createBranch(...)` call to the `LOCATIONS` array.
- */
 function createBranch(id: string, branchName: string): Location {
   return {
     id,
@@ -49,14 +52,16 @@ function createBranch(id: string, branchName: string): Location {
     subFields: (["A", "B", "AB"] as const).map((type) => ({
       id: `${id}-${type.toLowerCase()}`,
       type,
-      label: SUB_FIELD_LABEL[type],
+      label: SUB_FIELD_DATA[type].label,
+      labelAr: SUB_FIELD_DATA[type].labelAr,
+      descriptionAr: SUB_FIELD_DATA[type].descriptionAr,
     })),
   };
 }
 
 export const LOCATIONS: Location[] = [
-  createBranch("mubarak-al-sabeen", "فرع مبارك السبعين"),
-  createBranch("al-oula", "فرع الأولى"),
+  createBranch("mubarak-al-sabeen", "السبعين"),
+  createBranch("al-oula", "الأولي"),
   // Add future branches here, e.g.:
   // createBranch("nasr-city", "فرع مدينة نصر"),
 ];
@@ -68,20 +73,26 @@ export const FIELD_PRICE_EGP: Record<FieldType, number> = {
   AB: 600,
 };
 
+/** Arabic labels for field types */
+export const FIELD_TYPE_LABEL_AR: Record<FieldType, string> = {
+  A: "ملعب 5×5 — الأول",
+  B: "ملعب 5×5 — الثاني",
+  AB: "ملعب 9×9",
+};
+
+/** English labels kept for internal use */
 export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
-  A: "Half field (5v5)",
-  B: "Half field (5v5)",
-  AB: "Full field (7v7)",
+  A: "Field A (5v5)",
+  B: "Field B (5v5)",
+  AB: "Full Field (9v9)",
 };
 
 /**
  * Working hours, expressed as hour-of-day (0-23) on a 24h clock.
  * All branches operate overnight: 14:00 (2 PM) through 04:00 the next day.
- * `crossesMidnight: true` signals to any future slot-generation logic
- * that the closing hour is on the following calendar day.
  */
 export const WORKING_HOURS = {
-  openHour: 14, // 2:00 PM
-  closeHour: 4, // 4:00 AM (next day)
+  openHour: 14,  // 2:00 PM
+  closeHour: 4,  // 4:00 AM (next day)
   crossesMidnight: true,
 } as const;

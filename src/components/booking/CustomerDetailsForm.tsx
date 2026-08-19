@@ -1,6 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, Phone, CheckCircle2, AlignRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,40 +26,55 @@ export function CustomerDetailsForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="customerName">Full name</Label>
-        <Input id="customerName" placeholder="Ahmed Mostafa" {...register("customerName")} />
-        {errors.customerName && <p className="text-xs text-destructive">{errors.customerName.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" dir="rtl">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="customerName" className="font-bold flex items-center gap-1.5">
+          <User className="size-4 text-primary" />
+          الاسم بالكامل
+        </Label>
+        <Input id="customerName" placeholder="أحمد مصطفى" className="h-11 rounded-xl" {...register("customerName")} />
+        {errors.customerName && <p className="text-xs text-destructive font-medium">{errors.customerName.message}</p>}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="customerPhone">Phone number</Label>
-        <Input id="customerPhone" type="tel" placeholder="+201234567890" {...register("customerPhone")} />
-        {errors.customerPhone && <p className="text-xs text-destructive">{errors.customerPhone.message}</p>}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="customerPhone" className="font-bold flex items-center gap-1.5">
+          <Phone className="size-4 text-primary" />
+          رقم الهاتف (واتساب)
+        </Label>
+        <Input id="customerPhone" type="tel" dir="ltr" className="h-11 rounded-xl text-left" placeholder="01000000000" {...register("customerPhone")} />
+        {errors.customerPhone && <p className="text-xs text-destructive font-medium">{errors.customerPhone.message}</p>}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label>Payment method</Label>
+      <div className="flex flex-col gap-2">
+        <Label className="font-bold flex items-center gap-1.5">
+          طريقة الدفع
+        </Label>
         <Controller
           name="intendedPaymentMethod"
           control={control}
           render={({ field }) => <PaymentMethodPicker value={field.value} onChange={field.onChange} />}
         />
         {errors.intendedPaymentMethod && (
-          <p className="text-xs text-destructive">{errors.intendedPaymentMethod.message}</p>
+          <p className="text-xs text-destructive font-medium">{errors.intendedPaymentMethod.message}</p>
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="notes">Notes (optional)</Label>
-        <Input id="notes" placeholder="Anything we should know?" {...register("notes")} />
-        {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="notes" className="font-bold flex items-center gap-1.5">
+          <AlignRight className="size-4 text-primary" />
+          ملاحظات (اختياري)
+        </Label>
+        <Input id="notes" placeholder="أي ملاحظات إضافية؟" className="h-11 rounded-xl" {...register("notes")} />
+        {errors.notes && <p className="text-xs text-destructive font-medium">{errors.notes.message}</p>}
       </div>
 
-      <Button type="submit" size="lg" disabled={isSubmitting} className="mt-1">
-        {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-        Confirm booking
+      <Button type="submit" size="lg" disabled={isSubmitting} className="mt-2 h-12 rounded-xl text-base font-bold shadow-md shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95">
+        {isSubmitting ? (
+          <Loader2 className="size-5 animate-spin" />
+        ) : (
+          <CheckCircle2 className="size-5" />
+        )}
+        تأكيد بيانات الحجز
       </Button>
     </form>
   );
