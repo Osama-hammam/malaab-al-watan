@@ -1,19 +1,15 @@
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import {
   CalendarCheck,
   MapPin,
   Clock,
   Star,
-  CheckCircle2,
   MessageCircle,
   Zap,
   Shield,
-  Users,
   ChevronLeft,
-  Trophy,
-  Flame,
 } from "lucide-react";
 
 import { ROUTES } from "@/constants/routes";
@@ -21,407 +17,245 @@ import { FIELD_PRICE_EGP } from "@/constants/fields";
 import { HomeScheduleWidget } from "@/components/home/HomeScheduleWidget";
 
 const FEATURES = [
-  { icon: Zap, title: "حجز فوري", desc: "احجز ملعبك في ثوانٍ بدون انتظار", color: "text-yellow-400", bg: "bg-yellow-400/10" },
-  { icon: Shield, title: "دفع آمن", desc: "دفع عبر فودافون كاش مع إثبات التحويل", color: "text-blue-400", bg: "bg-blue-400/10" },
-  { icon: Clock, title: "مفتوح طوال الليل", desc: "من الساعة 2 ظهراً حتى 4 صباحاً", color: "text-primary", bg: "bg-primary/10" },
-  { icon: Star, title: "ملاعب مضاءة", desc: "عشب صناعي عالي الجودة بإضاءة كاملة", color: "text-orange-400", bg: "bg-orange-400/10" },
-];
-
-const HOW_STEPS = [
-  { num: "١", title: "اختر الموقع", desc: "السبعين أو الأولي", icon: MapPin },
-  { num: "٢", title: "اختر الملعب", desc: "5×5 أو 9×9", icon: Trophy },
-  { num: "٣", title: "اختر الموعد", desc: "اليوم والساعة المناسبة", icon: Clock },
-  { num: "٤", title: "أدخل بياناتك", desc: "الاسم ورقم الهاتف", icon: Users },
-  { num: "٥", title: "ادفع وأرسل", desc: "فودافون كاش وارفع إثبات الدفع", icon: CheckCircle2 },
+  { icon: Zap, title: "في لمح البصر", desc: "بدون انتظار، ضغطة واحدة وتأكد حجزك" },
+  { icon: Shield, title: "أمان وثقة", desc: "دفع مضمون عبر فودافون كاش" },
+  { icon: Clock, title: "سهرانين للصبح", desc: "ملاعبنا مفتوحة من 2 ظهراً لـ 4 الفجر" },
+  { icon: Star, title: "إضاءة نهارية", desc: "نجيلة صناعي وتغطية نور كاملة للملعب" },
 ];
 
 const BRANCHES = [
   {
     id: "mubarak-al-sabeen",
-    name: "ملعب الوطن — السبعين",
-    shortName: "السبعين",
+    name: "ملعب السبعين",
     address: "السبعين، القاهرة",
-    emoji: "🏟️",
     fields: [
-      { label: "ملعب 5×5 — الأول", price: FIELD_PRICE_EGP.A },
-      { label: "ملعب 5×5 — الثاني", price: FIELD_PRICE_EGP.B },
-      { label: "ملعب 9×9", price: FIELD_PRICE_EGP.AB, note: "= الأول + الثاني" },
+      { label: "ملعب 5×5 (الأول)", price: FIELD_PRICE_EGP.A },
+      { label: "ملعب 5×5 (الثاني)", price: FIELD_PRICE_EGP.B },
+      { label: "ملعب 9×9", price: FIELD_PRICE_EGP.AB },
     ],
   },
   {
     id: "al-oula",
-    name: "ملعب الوطن — الأولي",
-    shortName: "الأولي",
+    name: "ملعب الأولي",
     address: "الأولي، القاهرة",
-    emoji: "⚽",
     fields: [
-      { label: "ملعب 5×5 — الأول", price: FIELD_PRICE_EGP.A },
-      { label: "ملعب 5×5 — الثاني", price: FIELD_PRICE_EGP.B },
-      { label: "ملعب 9×9", price: FIELD_PRICE_EGP.AB, note: "= الأول + الثاني" },
+      { label: "ملعب 5×5 (الأول)", price: FIELD_PRICE_EGP.A },
+      { label: "ملعب 5×5 (الثاني)", price: FIELD_PRICE_EGP.B },
+      { label: "ملعب 9×9", price: FIELD_PRICE_EGP.AB },
     ],
   },
 ];
 
-const stagger = {
+const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.09 } },
+  show: { transition: { staggerChildren: 0.1 } },
 };
-
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0 },
-};
-
-const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.75 },
-  show: { opacity: 1, scale: 1 },
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 export default function Home() {
-  const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const ballY = useTransform(scrollYProgress, [0, 1], [0, 120]);
-  const ballRotate = useTransform(scrollYProgress, [0, 1], [0, 180]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
+  
+  // Create a massive rolling ball effect tied to scroll
+  const ballRotate = useTransform(scrollYProgress, [0, 1], [0, 720]);
+  const ballY = useTransform(scrollYProgress, [0, 1], ["-10vh", "70vh"]);
+
+  // Force dark mode on this page to match the neon theme
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+    return () => document.documentElement.classList.remove("dark");
+  }, []);
 
   return (
-    <div dir="rtl" lang="ar">
+    <div ref={containerRef} dir="rtl" lang="ar" className="relative min-h-screen overflow-hidden bg-background">
+      
+      {/* Immersive Background Effects */}
+      <div className="moving-grid" />
+      <div className="glow-blob primary w-[500px] h-[500px] top-[-10%] right-[-10%]" />
+      <div className="glow-blob primary w-[400px] h-[400px] bottom-[20%] left-[-10%]" />
+      
+      {/* Huge Rolling Ball in the background */}
+      <motion.div 
+        style={{ rotate: ballRotate, y: ballY, x: "-50%" }}
+        className="absolute left-[50%] z-0 opacity-[0.03] pointer-events-none select-none text-[150vw] md:text-[80vw] leading-none"
+      >
+        ⚽
+      </motion.div>
 
-      {/* ===== HERO ===== */}
-      <section ref={heroRef} className="hero-bg pitch-pattern relative overflow-hidden py-24 sm:py-32">
-        {/* Decorative floating balls */}
+      {/* ===== HERO SECTION ===== */}
+      <section className="relative z-10 flex flex-col items-center justify-center min-h-[90vh] px-4 pt-20 pb-10 text-center">
         <motion.div
-          style={{ y: ballY, rotate: ballRotate }}
-          className="absolute -left-10 top-10 text-7xl opacity-20 select-none pointer-events-none"
-        >⚽</motion.div>
-        <motion.div
-          animate={{ y: [0, -20, 0], rotate: [0, 15, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute right-8 top-24 text-5xl opacity-10 select-none pointer-events-none"
-        >⚽</motion.div>
-        <motion.div
-          animate={{ y: [0, 16, 0], rotate: [0, -10, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute left-1/3 bottom-8 text-4xl opacity-10 select-none pointer-events-none"
-        >⚽</motion.div>
-
-        {/* Ripple rings */}
-        <div className="absolute right-16 top-16 size-48 opacity-10 pointer-events-none">
-          <div className="ripple-ring absolute inset-0" />
-          <div className="ripple-ring absolute inset-0" />
-          <div className="ripple-ring absolute inset-0" />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-white">
-          {/* Live badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-            className="sport-badge mx-auto mb-6 w-fit"
-          >
-            <span className="size-2 rounded-full bg-green-400 animate-pulse" />
-            متاح الحجز الآن
-            <Flame className="size-3.5 text-yellow-400" />
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-6 text-5xl font-black leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl"
-          >
-            احجز ملعبك
-            <br />
-            <span className="text-shimmer">في ثوانٍ ⚽</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.22 }}
-            className="mx-auto mb-10 max-w-xl text-base text-white/75 sm:text-lg leading-relaxed"
-          >
-            ملاعب عشب صناعي مضاءة بالكامل في موقعين — السبعين والأولي.
-            <br />
-            حجز فوري، دفع بفودافون كاش، وتأكيد سريع.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.34 }}
-            className="flex flex-col items-center justify-center gap-3 sm:flex-row"
-          >
-            <Link
-              to={ROUTES.booking}
-              className="btn-glow relative flex items-center gap-2.5 rounded-full bg-primary px-9 py-4 text-base font-black text-white shadow-2xl shadow-primary/40 transition-all hover:scale-105 hover:shadow-primary/50 active:scale-95"
-            >
-              <CalendarCheck className="size-5" />
-              احجز الآن
-            </Link>
-            <a
-              href="https://wa.me/201066328651"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 rounded-full border-2 border-white/25 bg-white/10 px-7 py-4 text-base font-bold text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/20"
-            >
-              <MessageCircle className="size-5" />
-              تواصل عبر واتساب
-            </a>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.55, duration: 0.6 }}
-            className="mt-14 flex flex-wrap items-center justify-center gap-10"
-          >
-            {[
-              { value: "٢", label: "موقع" },
-              { value: "٦", label: "ملاعب" },
-              { value: "١٤", label: "ساعة يومياً" },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 + i * 0.1, duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
-                className="text-center"
-              >
-                <div className="text-4xl font-black text-gradient">{stat.value}</div>
-                <div className="mt-1 text-sm font-medium text-white/60">{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ===== SCHEDULE WIDGET ===== */}
-      <section className="mx-auto max-w-5xl px-4 py-8 relative z-20 -mt-14">
-        <HomeScheduleWidget />
-      </section>
-
-      {/* ===== FEATURES ===== */}
-      <section className="mx-auto max-w-5xl px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-10 text-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-full glass-panel px-5 py-2 text-sm font-bold text-primary neon-border"
         >
-          <h2 className="mb-2 text-3xl font-black text-foreground">لماذا ملعب الوطن؟</h2>
-          <p className="text-muted-foreground">كل اللي محتاجه في مكان واحد</p>
+          <span className="size-2.5 rounded-full bg-primary animate-pulse" />
+          الملعب جاهز والتحدي بيبدأ من هنا
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mb-6 text-6xl md:text-8xl font-black leading-tight tracking-tighter uppercase"
+        >
+          <span className="block text-foreground">أرض الملعب</span>
+          <span className="block text-outline text-transparent" style={{ WebkitTextStroke: "2px var(--primary)" }}>مستنياك</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="mx-auto mb-10 max-w-lg text-lg md:text-xl text-muted-foreground"
+        >
+          عيش تجربة اللعب الاحترافي. ملاعب مجهزة بالكامل، حجز أونلاين في ثوانٍ، ومنافسة مفيش زيها.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="flex flex-col w-full sm:w-auto sm:flex-row items-center gap-4"
+        >
+          <Link
+            to={ROUTES.booking}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-primary px-10 py-4 text-lg font-black text-primary-foreground shadow-[0_0_40px_oklch(0.72_0.22_142/40%)] transition-all hover:scale-105 active:scale-95"
+          >
+            <CalendarCheck className="size-6" />
+            انزل العب دلوقتي
+          </Link>
+        </motion.div>
+      </section>
+
+      {/* ===== WIDGET OVERLAP ===== */}
+      <section className="relative z-20 mx-auto max-w-5xl px-4 pb-20">
+        <div className="glass-panel rounded-3xl p-1 neon-border">
+          <HomeScheduleWidget />
+        </div>
+      </section>
+
+      {/* ===== NON-TRADITIONAL FEATURES ===== */}
+      <section className="relative z-10 mx-auto max-w-6xl px-4 py-20">
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
+          <div>
+            <h2 className="text-4xl md:text-6xl font-black text-foreground">ليه تختارنا؟</h2>
+            <p className="text-primary font-bold mt-2 text-xl">لأن الكورة عندنا مش مجرد لعبة</p>
+          </div>
         </motion.div>
 
         <motion.div
           variants={stagger}
           initial="hidden"
           whileInView="show"
-          viewport={{ once: true }}
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
         >
-          {FEATURES.map((f) => (
+          {FEATURES.map((f, i) => (
             <motion.div
-              key={f.title}
+              key={i}
               variants={fadeUp}
-              className="card-hover group flex flex-col gap-4 rounded-3xl border-2 bg-card p-6 shadow-sm"
+              className="glass-panel relative overflow-hidden rounded-3xl p-8 transition-all hover:-translate-y-2 hover:shadow-[0_0_30px_oklch(0.72_0.22_142/20%)] group"
             >
-              <div className={`flex size-12 items-center justify-center rounded-2xl ${f.bg} transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-                <f.icon className={`size-6 ${f.color}`} />
-              </div>
-              <div>
-                <h3 className="font-black text-foreground">{f.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
-              </div>
+              <div className="absolute -right-4 -top-4 size-24 rounded-full bg-primary/10 blur-xl group-hover:bg-primary/20 transition-colors" />
+              <f.icon className="size-10 text-primary mb-6 relative z-10" />
+              <h3 className="text-2xl font-black text-foreground mb-3 relative z-10">{f.title}</h3>
+              <p className="text-muted-foreground relative z-10">{f.desc}</p>
             </motion.div>
           ))}
         </motion.div>
       </section>
 
-      {/* ===== BRANCHES ===== */}
-      <section className="relative overflow-hidden py-20">
-        {/* Subtle green wavy bg */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/3 to-transparent pointer-events-none" />
+      {/* ===== CREATIVE BRANCHES DISPLAY ===== */}
+      <section className="relative z-10 py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+        <div className="mx-auto max-w-6xl px-4 relative">
+          
+          <div className="text-center mb-16">
+            <h2 className="text-5xl md:text-7xl font-black text-outline text-transparent" style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.8)" }}>
+              ملاعبنا
+            </h2>
+          </div>
 
-        <div className="relative mx-auto max-w-5xl px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-12 text-center"
-          >
-            <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-bold text-primary">
-              <MapPin className="size-3.5" />
-              موقعانا
-            </span>
-            <h2 className="mt-2 text-3xl font-black text-foreground">ملاعبنا</h2>
-            <p className="mt-1 text-muted-foreground">اختر من موقعين متاحين في القاهرة</p>
-          </motion.div>
-
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid gap-6 sm:grid-cols-2"
-          >
-            {BRANCHES.map((branch) => (
+          <div className="grid md:grid-cols-2 gap-8">
+            {BRANCHES.map((branch, i) => (
               <motion.div
                 key={branch.id}
-                variants={fadeUp}
-                className="card-hover group relative overflow-hidden rounded-3xl border-2 bg-card p-7 shadow-md"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: i * 0.2 }}
+                viewport={{ once: true, margin: "-50px" }}
+                className="glass-panel neon-border flex flex-col justify-between rounded-[2rem] p-8 md:p-10"
               >
-                {/* BG blob */}
-                <div className="absolute -left-8 -top-8 size-32 rounded-full bg-primary/5 blur-2xl transition-all group-hover:scale-150 group-hover:bg-primary/10" />
-
-                <div className="relative">
-                  <div className="mb-5 flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                      <MapPin className="size-7" />
+                    </div>
                     <div>
-                      <div className="mb-2 text-4xl">{branch.emoji}</div>
-                      <h3 className="text-xl font-black text-foreground">{branch.name}</h3>
-                      <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <MapPin className="size-3.5 text-primary" />
-                        {branch.address}
-                      </div>
+                      <h3 className="text-3xl font-black text-foreground">{branch.name}</h3>
+                      <p className="text-muted-foreground">{branch.address}</p>
                     </div>
                   </div>
 
-                  <div className="mb-6 flex flex-col gap-2.5">
+                  <div className="space-y-4 mb-10">
                     {branch.fields.map((field) => (
-                      <div
-                        key={field.label}
-                        className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3 transition-colors group-hover:bg-muted/70"
-                      >
-                        <div>
-                          <span className="text-sm font-bold text-foreground">{field.label}</span>
-                          {"note" in field && field.note && (
-                            <span className="mr-1.5 text-xs text-muted-foreground">({field.note})</span>
-                          )}
-                        </div>
-                        <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-black text-primary">
-                          {field.price} ج.م
-                        </span>
+                      <div key={field.label} className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
+                        <span className="text-lg font-bold text-foreground">{field.label}</span>
+                        <span className="text-primary font-black text-xl">{field.price} <span className="text-sm text-muted-foreground">ج.م</span></span>
                       </div>
                     ))}
                   </div>
-
-                  <Link
-                    to={`${ROUTES.booking}?branch=${branch.id}`}
-                    className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-primary px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] hover:shadow-primary/40 active:scale-95"
-                  >
-                    احجز في {branch.shortName}
-                    <ChevronLeft className="size-4" />
-                  </Link>
                 </div>
+
+                <Link
+                  to={`${ROUTES.booking}?branch=${branch.id}`}
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white/5 hover:bg-primary hover:text-primary-foreground px-6 py-5 text-lg font-black text-foreground transition-all active:scale-95 border border-white/10 hover:border-transparent"
+                >
+                  احجز في {branch.name}
+                  <ChevronLeft className="size-5" />
+                </Link>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ===== HOW IT WORKS ===== */}
-      <section className="hero-bg pitch-pattern relative overflow-hidden py-20">
-        <div className="relative z-10 mx-auto max-w-5xl px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-14 text-center text-white"
-          >
-            <h2 className="mb-2 text-3xl font-black">كيف يعمل الحجز؟</h2>
-            <p className="text-white/65">خطوات بسيطة في دقيقتين</p>
-          </motion.div>
-
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid gap-5 sm:grid-cols-5"
-          >
-            {HOW_STEPS.map((step, i) => (
-              <motion.div
-                key={step.num}
-                variants={scaleIn}
-                className="group flex flex-col items-center gap-3 text-center"
-              >
-                <div className="relative">
-                  <div className="flex size-16 items-center justify-center rounded-full bg-white/10 text-2xl font-black text-white border-2 border-white/20 backdrop-blur-sm shadow-xl transition-transform group-hover:scale-110 group-hover:-rotate-3">
-                    {step.num}
-                  </div>
-                  {i < HOW_STEPS.length - 1 && (
-                    <div className="absolute top-1/2 -left-4 hidden h-0.5 w-8 -translate-y-1/2 bg-white/20 sm:block" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-black text-white text-sm">{step.title}</h3>
-                  <p className="mt-0.5 text-xs text-white/60">{step.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-14 flex justify-center"
-          >
-            <Link
-              to={ROUTES.booking}
-              className="btn-glow flex items-center gap-2.5 rounded-full bg-white px-10 py-4 text-base font-black text-primary shadow-2xl shadow-black/30 transition-all hover:scale-105 active:scale-95"
-            >
-              <CalendarCheck className="size-5" />
-              ابدأ الحجز الآن
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ===== CONTACT CTA ===== */}
-      <section className="mx-auto max-w-3xl px-4 py-20 text-center">
+      {/* ===== FINAL CALL TO ACTION ===== */}
+      <section className="relative z-10 py-24 text-center px-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.55, ease: [0.34, 1.16, 0.64, 1] }}
-          className="card-hover rounded-3xl border-2 bg-card p-10 shadow-xl"
+          className="mx-auto max-w-2xl glass-panel neon-border rounded-[3rem] p-10 md:p-16"
         >
-          <div className="mb-4 text-5xl animate-float inline-block">💬</div>
-          <h2 className="mb-3 text-2xl font-black text-foreground">هل لديك استفسار؟</h2>
-          <p className="mb-7 text-muted-foreground leading-relaxed">
-            تواصل معنا مباشرة عبر واتساب وسنرد عليك في أقرب وقت.
+          <div className="text-6xl mb-6 select-none">🔥</div>
+          <h2 className="text-4xl md:text-5xl font-black text-foreground mb-6">مستعد للماتش الجاي؟</h2>
+          <p className="text-lg text-muted-foreground mb-10">
+            لو عندك أي استفسار أو محتاج مساعدة في الحجز، تيم الدعم بتاعنا جاهز يرد عليك فوراً على الواتساب.
           </p>
           <a
             href="https://wa.me/201066328651"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 rounded-full bg-green-500 px-9 py-4 font-black text-white shadow-xl shadow-green-500/30 transition-all hover:scale-105 hover:bg-green-600 active:scale-95"
+            className="inline-flex items-center justify-center gap-3 w-full md:w-auto rounded-full bg-[#25D366] px-10 py-5 text-lg font-black text-white shadow-[0_0_30px_rgba(37,211,102,0.4)] transition-transform hover:scale-105 active:scale-95"
           >
-            <MessageCircle className="size-5" />
-            تحدث معنا على واتساب
+            <MessageCircle className="size-6" />
+            تواصل معانا واتساب
           </a>
         </motion.div>
       </section>
 
-      {/* ===== WhatsApp Floating Button ===== */}
-      <a
-        href="https://wa.me/201066328651"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="تواصل معنا عبر واتساب"
-        className="whatsapp-float animate-float flex size-14 items-center justify-center rounded-full bg-green-500 text-white shadow-xl shadow-green-500/40 transition-transform hover:scale-110"
-      >
-        <MessageCircle className="size-7" />
-      </a>
     </div>
   );
 }
