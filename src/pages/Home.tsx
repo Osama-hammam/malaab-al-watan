@@ -1,6 +1,6 @@
-import { motion, useScroll, useTransform, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 import {
   CalendarCheck,
   MapPin,
